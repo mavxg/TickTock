@@ -6,6 +6,8 @@ using System.Text;
 using System.Windows.Forms;
 using TickTock.Properties;
 using System.Windows.Automation;
+using System.IO;
+using System.Linq;
 
 namespace TickTock
 {
@@ -14,6 +16,13 @@ namespace TickTock
         Timer timer;
         NotifyIcon ni;
         ToolStripMenuItem toggle;
+        string logPath;
+        string activityFile;
+        string lastDay;
+
+        string lastUrl = "not-yo-mama's-sentinal";
+        string lastTitle = "not-yo-mama's-sentinal";
+        string lastProcess = "not-yo-mama's-sentinal";
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -193,25 +202,32 @@ namespace TickTock
 
         public static string GetInternetUrl()
         {
-            IntPtr hwnd = GetForegroundWindow();
-            uint pid;
-            GetWindowThreadProcessId(hwnd, out pid);
-            Process p = Process.GetProcessById((int)pid);
+            try
+            {
+                IntPtr hwnd = GetForegroundWindow();
+                uint pid;
+                GetWindowThreadProcessId(hwnd, out pid);
+                Process p = Process.GetProcessById((int)pid);
 
-            if (p == null)
+                if (p == null)
+                {
+                    return null;
+                }
+
+                switch (p.ProcessName)
+                {
+                    case "iexplore":
+                        return GetInternetExplorerUrl(p);
+                    case "chrome":
+                        return GetChromeUrl(p);
+                    case "firefox":
+                        return GetFirefoxUrl(p);
+                    default:
+                        return GetEdgeUrl(p);
+                }
+            } catch
             {
                 return null;
-            }
-            
-            switch (p.ProcessName) {
-                case "iexplore":
-                    return GetInternetExplorerUrl(p);
-                case "chrome":
-                    return GetChromeUrl(p);
-                case "firefox":
-                    return GetFirefoxUrl(p);
-                default:
-                    return GetEdgeUrl(p);
             }
         }
 
@@ -261,6 +277,32 @@ namespace TickTock
         public Capture()
         {
             ni = new NotifyIcon();
+
+            logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"TickTock");
+            activityFile = Path.Combine(logPath, "activity.js");
+
+            System.IO.Directory.CreateDirectory(logPath); //create the log directory if it doesn't exist
+
+            var indexHtml = Path.Combine(logPath, "index.html");
+            if (!File.Exists(indexHtml))
+            {
+                File.WriteAllText(indexHtml, Resources.index_html);
+            }
+
+            if (File.Exists(activityFile)) {
+                //scan activity file to get the last lastDay (can scan backwards)
+                var lines = File.ReadAllLines(activityFile).Reverse().Take(6000);
+                foreach (string line in lines)
+                {
+                    if (line.StartsWith("b=a['"))
+                    {
+                        lastDay = line.Substring(5, 10);
+                        Console.WriteLine("LastDay: " + lastDay);
+                        break;
+                    }
+                }
+            }
+            
 
             timer = new Timer();
             timer.Tick += new EventHandler(TimerEvent);
@@ -354,19 +396,75 @@ namespace TickTock
                 return;
             }
 
-            Console.WriteLine(GetActiveWindowTitle());
-            Console.WriteLine(GetActiveProcessFileName());
-            Console.WriteLine(GetInternetUrl());
-            Console.WriteLine("\n\n");
+            var now = DateTime.Now;
+            var day = now.ToString("yyyy-MM-dd");
+            var time = now.ToString("HH.mm.ss.ffff");
+
+            var title = GetActiveWindowTitle();
+            var process = GetActiveProcessFileName();
+            var url = GetInternetUrl();
+
+            var snapPath = Path.Combine(logPath, day);
+            System.IO.Directory.CreateDirectory(snapPath);
+
+            int duration = (int)(Interval / 1000);
+
+            using (var tw = new StreamWriter(activityFile, true))
+            {
+                if (tw.BaseStream.Position == 0)
+                {
+                    //create file if it doesn't exist
+                    tw.WriteLine("a={}");
+                    lastDay = null;
+                }
+                if (day != lastDay)
+                {
+                    lastDay = day;
+                    tw.WriteLine("b=a['"+ lastDay+ "']={}");
+                }
+
+                if (title != lastTitle)
+                {
+                    lastTitle = title;
+                    if (title == null)
+                        tw.WriteLine("t=null");
+                    else
+                        tw.WriteLine("t='" + title.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                }
+
+                if (process != lastProcess)
+                {
+                    lastProcess = process;
+                    if (process == null)
+                        tw.WriteLine("p=null");
+                    else
+                        tw.WriteLine("p='" + process.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                }
+
+                if (url != lastUrl)
+                {
+                    lastUrl = url;
+                    if (url == null)
+                        tw.WriteLine("u=null");
+                    else
+                        tw.WriteLine("u='" + url.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                }
+
+                tw.WriteLine("b['{0}']={{t:t,p:p,u:u,d:{1}}}", time, duration);
+                tw.Close();
+            }
 
             //TODO
             /*
-             * Write out to AppData\Local\TickTock\YYYY-MM-DD\log.js
-             * activity = {}
-             * activity['HH.MM.SS.milliseconds'] = { .... stuff we know about this ... }
+             * Don't log if the user is not active
              * 
-             * ??? Can we then also put an index.html object into that folder ???
-             * and then do some form of slider/playback for the data?
+             * Save an image per tick of the screen
+             * 
+             * Playback day
+             * 
+             * Choose older day
+             * 
+             * Playback slider
              */
         }
     }

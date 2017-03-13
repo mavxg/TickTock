@@ -71,6 +71,24 @@ namespace TickTock.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
+        ///&lt;html&gt;
+        ///&lt;head&gt;
+        ///	&lt;title&gt;TickTock&lt;/title&gt;
+        ///&lt;/head&gt;
+        ///&lt;body&gt;
+        ///&lt;p&gt;Hello world&lt;/p&gt;
+        ///&lt;/body&gt;
+        ///&lt;script type=&quot;text/javascript&quot; src=&quot;activity.js&quot;&gt;&lt;/script&gt;
+        ///&lt;/html&gt;.
+        /// </summary>
+        internal static string index_html {
+            get {
+                return ResourceManager.GetString("index_html", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Start {
