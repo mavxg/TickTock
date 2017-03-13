@@ -189,7 +189,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:TickTock"
         "ProductCode" = "8:{63897CEF-3628-43B0-92D1-9854630ED952}"
-        "PackageCode" = "8:{F0A30988-F77F-474E-8016-AEA8D3B87DBA}"
+        "PackageCode" = "8:{999822FA-1AAD-42EB-A7EE-CDC073C9CA88}"
         "UpgradeCode" = "8:{C173CDCB-B6AE-401A-8750-2EB6BECAF5A5}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -264,6 +264,70 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_34F0E10FA55C4BA28646023BB4B86350"
+                            {
+                            "Name" = "8:Microsoft"
+                            "Condition" = "8:"
+                            "AlwaysCreate" = "11:FALSE"
+                            "DeleteAtUninstall" = "11:FALSE"
+                            "Transitive" = "11:FALSE"
+                                "Keys"
+                                {
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_E829ECAC9BD641FDA55FF25C499F2580"
+                                    {
+                                    "Name" = "8:Windows"
+                                    "Condition" = "8:"
+                                    "AlwaysCreate" = "11:FALSE"
+                                    "DeleteAtUninstall" = "11:FALSE"
+                                    "Transitive" = "11:FALSE"
+                                        "Keys"
+                                        {
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_969B2A221E53492DA365BB16036E0F81"
+                                            {
+                                            "Name" = "8:CurrentVersion"
+                                            "Condition" = "8:"
+                                            "AlwaysCreate" = "11:FALSE"
+                                            "DeleteAtUninstall" = "11:FALSE"
+                                            "Transitive" = "11:FALSE"
+                                                "Keys"
+                                                {
+                                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_82F3634400FD4BBFAF9FD2AEC1250F32"
+                                                    {
+                                                    "Name" = "8:Run"
+                                                    "Condition" = "8:"
+                                                    "AlwaysCreate" = "11:FALSE"
+                                                    "DeleteAtUninstall" = "11:FALSE"
+                                                    "Transitive" = "11:FALSE"
+                                                        "Keys"
+                                                        {
+                                                        }
+                                                        "Values"
+                                                        {
+                                                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_EF58A9DF845B4C93972DA2B58E9DB640"
+                                                            {
+                                                            "Name" = "8:TickTock"
+                                                            "Condition" = "8:"
+                                                            "Transitive" = "11:FALSE"
+                                                            "ValueTypes" = "3:1"
+                                                            "Value" = "8:[TARGETDIR]TickTock.exe"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                "Values"
+                                                {
+                                                }
+                                            }
+                                        }
+                                        "Values"
+                                        {
+                                        }
+                                    }
+                                }
+                                "Values"
+                                {
+                                }
+                            }
                             "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_63DB267AD3534201B93271A9CE59ACA2"
                             {
                             "Name" = "8:[Manufacturer]"
@@ -309,6 +373,20 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_230B688DC91944FAA40F06904786E014"
+            {
+            "Name" = "8:TickTock"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_354BDD72E3C04E07B8705709B5E57B21"
+            "Folder" = "8:_CF80BAE7F1214F87B2C48B7892CA111E"
+            "WorkingFolder" = "8:_2B769B06D78E466CA4AF025FE92923B9"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
