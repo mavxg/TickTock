@@ -561,6 +561,8 @@ namespace TickTock
              * Choose older day
              * 
              * Playback slider
+             * 
+             * Show explorer.exe file path (as url)
              */
         }
 

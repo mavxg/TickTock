@@ -124,7 +124,7 @@
     <None Include="Resources\Start.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\index.html.txt" />
+    <Content Include="Resources\index.html" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
