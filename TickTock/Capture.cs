@@ -8,6 +8,9 @@ using TickTock.Properties;
 using System.Windows.Automation;
 using System.IO;
 using System.Linq;
+using Microsoft.Win32;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace TickTock
 {
@@ -16,13 +19,19 @@ namespace TickTock
         Timer timer;
         NotifyIcon ni;
         ToolStripMenuItem toggle;
+        SessionSwitchEventHandler sessionSwitchEventHandler;
+        LASTINPUTINFO lastInputInfo;
+
         string logPath;
         string activityFile;
         string lastDay;
 
+        bool restart = false;
+
         string lastUrl = "not-yo-mama's-sentinal";
         string lastTitle = "not-yo-mama's-sentinal";
         string lastProcess = "not-yo-mama's-sentinal";
+
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -274,8 +283,23 @@ namespace TickTock
             }
         }
 
+        ImageCodecInfo jgpEncoder = GetEncoder(ImageFormat.Jpeg);
+        EncoderParameters myEncoderParameters;
+
+        public object ImageUtils { get; private set; }
+
         public Capture()
         {
+            sessionSwitchEventHandler = new SessionSwitchEventHandler(SwitchHandler);
+            SystemEvents.SessionSwitch += sessionSwitchEventHandler;
+
+            myEncoderParameters = new EncoderParameters(1);
+            myEncoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 50L);
+
+            lastInputInfo = new LASTINPUTINFO();
+            lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
+            lastInputInfo.dwTime = 0;
+
             ni = new NotifyIcon();
 
             logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"TickTock");
@@ -314,6 +338,24 @@ namespace TickTock
             toggle.Image = Resources.Start;
         }
 
+        private void SwitchHandler(object sender, SessionSwitchEventArgs e)
+        {
+            switch (e.Reason)
+            {
+                case SessionSwitchReason.SessionLock:
+                case SessionSwitchReason.SessionLogoff:
+                    restart = timer.Enabled;
+                    if (restart) Stop();
+                    Console.WriteLine("Lock Encountered");
+                    break;
+                case SessionSwitchReason.SessionUnlock:
+                case SessionSwitchReason.SessionLogon:
+                    if (!timer.Enabled && restart) Start();
+                    Console.WriteLine("UnLock Encountered");
+                    break;
+            }
+        }
+
         private ContextMenuStrip CreateContextMenu()
         {
             ContextMenuStrip menu = new ContextMenuStrip();
@@ -347,7 +389,6 @@ namespace TickTock
 
         public void Start()
         {
-            Console.WriteLine("Start clicked");
             timer.Start();
             toggle.Text = "Stop";
             toggle.Image = Resources.Stop;
@@ -355,7 +396,6 @@ namespace TickTock
 
         public void Stop()
         {
-            Console.WriteLine("Stop clicked");
             timer.Stop();
             toggle.Text = "Start";
             toggle.Image = Resources.Start;
@@ -382,10 +422,55 @@ namespace TickTock
         {
             ni.Dispose();
             timer.Dispose();
+            SystemEvents.SessionSwitch -= sessionSwitchEventHandler;
+        }
+
+        const int SPI_GETSCREENSAVERRUNNING = 114;
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool SystemParametersInfo(
+           int uAction, int uParam, ref bool lpvParam,
+           int flags);
+
+
+        // Returns TRUE if the screen saver is actually running
+        public static bool GetScreenSaverRunning()
+        {
+            bool isRunning = false;
+
+            SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0,
+               ref isRunning, 0);
+            return isRunning;
+        }
+
+        [DllImport("user32.dll")]
+        static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct LASTINPUTINFO
+        {
+            public uint cbSize;
+            public uint dwTime;
+        }
+
+        uint GetIdleTime() //seconds idle
+        {
+            if (!GetLastInputInfo(ref lastInputInfo))
+            {
+                return 0;
+            }
+            return ((uint)Environment.TickCount - lastInputInfo.dwTime) / 1000;
+
         }
 
         private void TimerEvent(Object obj, EventArgs args)
         {
+
+            if (GetScreenSaverRunning()) return; //Don't log anything with screensaver running
+
+            //don't log anything if we have been idle for more than 3 minutes
+            if (GetIdleTime() > 180) return;
+
             IntPtr hwnd = GetForegroundWindow();
             uint pid;
             GetWindowThreadProcessId(hwnd, out pid);
@@ -420,7 +505,7 @@ namespace TickTock
                 if (day != lastDay)
                 {
                     lastDay = day;
-                    tw.WriteLine("b=a['"+ lastDay+ "']={}");
+                    tw.WriteLine("b=a['" + lastDay + "']={}");
                 }
 
                 if (title != lastTitle)
@@ -454,18 +539,42 @@ namespace TickTock
                 tw.Close();
             }
 
+            using (Bitmap screenshot = new Bitmap(SystemInformation.VirtualScreen.Width,
+                               SystemInformation.VirtualScreen.Height,
+                               PixelFormat.Format32bppArgb))
+            using (Graphics screenGraph = Graphics.FromImage(screenshot))
+            {
+
+                screenGraph.CopyFromScreen(SystemInformation.VirtualScreen.X,
+                                       SystemInformation.VirtualScreen.Y,
+                                       0,
+                                       0,
+                                       SystemInformation.VirtualScreen.Size,
+                                       CopyPixelOperation.SourceCopy);
+                
+                screenshot.Save(Path.Combine(snapPath, time + ".jpg"), jgpEncoder, myEncoderParameters);
+            }
             //TODO
             /*
-             * Don't log if the user is not active
-             * 
-             * Save an image per tick of the screen
-             * 
              * Playback day
              * 
              * Choose older day
              * 
              * Playback slider
              */
+        }
+
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 }
