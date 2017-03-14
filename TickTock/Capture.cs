@@ -301,6 +301,7 @@ namespace TickTock
             lastInputInfo.dwTime = 0;
 
             ni = new NotifyIcon();
+            ni.Click += Ni_Click;
 
             logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"TickTock");
             activityFile = Path.Combine(logPath, "activity.js");
@@ -336,6 +337,16 @@ namespace TickTock
             toggle.Text = "Start";
             toggle.Click += new System.EventHandler(Toggle_Click);
             toggle.Image = Resources.Start;
+        }
+
+        private void Ni_Click(object sender, EventArgs e)
+        {
+            var ee = (MouseEventArgs)e;
+            if (ee.Button == MouseButtons.Left)
+            {
+                var indexHtml = Path.Combine(logPath, "index.html");
+                System.Diagnostics.Process.Start(indexHtml);
+            }
         }
 
         private void SwitchHandler(object sender, SessionSwitchEventArgs e)
@@ -556,8 +567,6 @@ namespace TickTock
             }
             //TODO
             /*
-             * Playback day
-             * 
              * Choose older day
              * 
              * Playback slider

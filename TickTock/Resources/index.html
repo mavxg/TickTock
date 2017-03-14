@@ -1,10 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>TickTock</title>
+    <title>TickTock</title>
 </head>
 <body>
-<p>Hello world</p>
+    <img id="image" />
+    <p id="process"></p>
+    <p id="title"></p>
+    <p id="url"></p>
     <script type="text/javascript" src="activity.js"></script>
+    <script type="text/javascript">
+	var image = document.getElementById("image")
+	image.style.width = window.innerWidth + 'px';
+	var proc = document.getElementById("process")
+	var title = document.getElementById("title")
+	var url = document.getElementById("url")
+	var dates = Object.keys(a);
+	var currentDateIndex = dates.length - 1;
+	var currentDay = dates[currentDateIndex];
+	var currentDayObj =  a[currentDay];
+	var startTime = Object.keys(currentDayObj)[0];
+	var k;
+	var prev;
+	var pk;
+	//double linked list
+	for (k in currentDayObj) {
+		var t = currentDayObj[k];
+		if (prev) {
+			prev.next = k;
+			t.prev = pk;
+		}
+		prev = t;
+		pk = k;
+	}
+	var endTime = k;
+	var currentTime = startTime;
+	var current = currentDayObj[currentTime];
+
+	function display() {
+		image.src = currentDay + "/" + currentTime + ".jpg";
+		url.innerText = current.u
+		proc.innerText = current.p
+		title.innerText = current.t
+	}
+
+	display();
+
+	var wheelListener = function(e) {
+		if (e.deltaY < 0) {
+			if (current.prev) {
+				currentTime = current.prev;
+			}
+		} else if (current.next) {
+			currentTime = current.next;
+		}
+		current = currentDayObj[currentTime];
+		display();
+	};
+
+	image.addEventListener('wheel', wheelListener, true)
+    </script>
 </body>
 </html>
