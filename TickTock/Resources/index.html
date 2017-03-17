@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TickTock</title>
+	<title>TickTock</title>
 </head>
 <body>
-    <img id="image" />
-    <p id="process"></p>
-    <p id="title"></p>
-    <p id="url"></p>
-    <script type="text/javascript" src="activity.js"></script>
-    <script type="text/javascript">
+<img id="image"/>
+<div id="bar" style="width: 100%; background: red;">&nbsp;</div>
+<p id="time"></p>
+<p id="process"></p>
+<p id="title"></p>
+<p id="url"></p>
+<script type="text/javascript" src="activity.js"></script>
+<script type="text/javascript">
 	var image = document.getElementById("image")
 	image.style.width = window.innerWidth + 'px';
 	var proc = document.getElementById("process")
 	var title = document.getElementById("title")
 	var url = document.getElementById("url")
+	var time = document.getElementById("time")
+	var bar = document.getElementById("bar")
 	var dates = Object.keys(a);
 	var currentDateIndex = dates.length - 1;
 	var currentDay = dates[currentDateIndex];
 	var currentDayObj =  a[currentDay];
-	var startTime = Object.keys(currentDayObj)[0];
+	var times = Object.keys(currentDayObj)
+	var startTime = times[0];
 	var k;
 	var prev;
 	var pk;
@@ -42,6 +47,7 @@
 		url.innerText = current.u
 		proc.innerText = current.p
 		title.innerText = current.t
+		time.innerText = currentTime
 	}
 
 	display();
@@ -58,7 +64,19 @@
 		display();
 	};
 
+	var barClick = function(e) {
+		var x = e.offsetX;
+		var w = e.target.clientWidth;
+		var p = x/w;
+		var l = times.length
+		var i = Math.floor(l * p)
+		currentTime = times[i]
+		current = currentDayObj[currentTime];
+		display();
+	}
+
 	image.addEventListener('wheel', wheelListener, true)
-    </script>
+	bar.addEventListener('click', barClick, true)
+</script>
 </body>
 </html>
