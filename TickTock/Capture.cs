@@ -525,7 +525,7 @@ namespace TickTock
                     if (title == null)
                         tw.WriteLine("t=null");
                     else
-                        tw.WriteLine("t='" + title.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                        tw.WriteLine("t='" + title.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n","\\n") + "'");
                 }
 
                 if (process != lastProcess)
@@ -534,7 +534,7 @@ namespace TickTock
                     if (process == null)
                         tw.WriteLine("p=null");
                     else
-                        tw.WriteLine("p='" + process.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                        tw.WriteLine("p='" + process.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n") + "'");
                 }
 
                 if (url != lastUrl)
@@ -543,7 +543,7 @@ namespace TickTock
                     if (url == null)
                         tw.WriteLine("u=null");
                     else
-                        tw.WriteLine("u='" + url.Replace("\\", "\\\\").Replace("'", "\\'") + "'");
+                        tw.WriteLine("u='" + url.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n") + "'");
                 }
 
                 tw.WriteLine("b['{0}']={{t:t,p:p,u:u,d:{1}}}", time, duration);
