@@ -39,6 +39,9 @@ namespace TickTock
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindowRect(IntPtr hWnd, ref Rect rect);
 
+        [DllImport("user32.dll")]
+        public static extern int GetSystemMetrics(int nIndex);
+
         [StructLayout(LayoutKind.Sequential)]
         private struct Rect
         {
@@ -331,7 +334,10 @@ namespace TickTock
 
             timer = new Timer();
             timer.Tick += new EventHandler(TimerEvent);
-            timer.Interval = 15000; //15 seconds default
+            timer.Interval = 120000; //2 minute default //15000; //15 seconds default
+
+            //Capture once on start.
+            TimerEvent(null, null);
 
             toggle = new ToolStripMenuItem();
             toggle.Text = "Start";
@@ -473,6 +479,21 @@ namespace TickTock
             return ((uint)Environment.TickCount - lastInputInfo.dwTime) / 1000;
 
         }
+        static Rectangle GetDesktopBounds()
+        {
+            var l = int.MaxValue;
+            var t = int.MaxValue;
+            var r = int.MinValue;
+            var b = int.MinValue;
+            foreach (var screen in Screen.AllScreens)
+            {
+                if (screen.Bounds.Left < l) l = screen.Bounds.Left;
+                if (screen.Bounds.Top < t) t = screen.Bounds.Top;
+                if (screen.Bounds.Right > r) r = screen.Bounds.Right;
+                if (screen.Bounds.Bottom > b) b = screen.Bounds.Bottom;
+            }
+            return Rectangle.FromLTRB(l, t, r, b);
+        }
 
         private void TimerEvent(Object obj, EventArgs args)
         {
@@ -549,6 +570,13 @@ namespace TickTock
                 tw.WriteLine("b['{0}']={{t:t,p:p,u:u,d:{1}}}", time, duration);
                 tw.Close();
             }
+
+            //var rect = GetDesktopBounds();
+
+            //int cx = GetSystemMetrics(78); //SM_CXVIRTUALSCREEN
+            //int cy = GetSystemMetrics(79); //SM_CYVIRTUALSCREEN
+            //int vx = GetSystemMetrics(76); //SM_XVIRTUALSCREEN 
+            //int vy = GetSystemMetrics(77); //SM_YVIRTUALSCREEN
 
             using (Bitmap screenshot = new Bitmap(SystemInformation.VirtualScreen.Width,
                                SystemInformation.VirtualScreen.Height,
